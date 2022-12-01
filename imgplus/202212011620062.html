@@ -1,0 +1,539 @@
+<!--
+
+  此示例下载自 https://echarts.apache.org/examples/zh/editor.html?c=map-HK
+
+-->
+
+<!DOCTYPE html>
+
+<html lang="zh-CN" style="height: 100%">
+
+<head>
+
+  <meta charset="utf-8">
+
+</head>
+
+<body style="height: 100%; margin: 0">
+
+  <div id="container" style="height: 100%"></div>
+
+  <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/jquery"></script>
+
+  <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+
+
+
+ 
+
+  <script type="text/javascript">
+
+    $.getJSON('./china.json', function(china)
+
+{
+
+    echarts.registerMap('china', china);
+
+   
+
+    var myChart = echarts.init(document.getElementById('container'));
+
+    myChart.showLoading(
+
+    {
+
+        text: '加载中...',
+
+        color: '#c23531',
+
+        fontSize: '28px',
+
+        textColor: '#000',
+
+        maskColor: 'rgba(255, 255, 255, 0.2)',
+
+        zlevel: 0,
+
+    });
+
+   
+
+    var scale = 1;
+
+   
+
+    var geoCoordMap = {};
+
+    echarts.util.each(china.features, function(dataItem, idx)
+
+    {
+
+        geoCoordMap[dataItem.properties.name] = dataItem.properties.cp;
+
+    });
+
+   
+
+    var mapData =
+
+    [
+
+        {from: '青海', to: '青海', value: 90, color: '#1DE9B6'},
+
+        {from: '青海', to: '安徽', value: 80, color: '#ACC5E9'},
+
+        {from: '青海', to: '甘肃', value: 70, color: '#FFDB5C'},
+
+        {from: '青海', to: '宁夏', value: 60, color: '#3D552A'},
+
+        {from: '青海', to: '山西', value: 50, color: '#B4B9FF'},
+
+        {from: '青海', to: '陕西', value: 40, color: '#A6C84C'},
+
+        {from: '青海', to: '广东', value: 30, color: '#FFA022'},
+
+        {from: '青海', to: '重庆', value: 20, color: '#46BEE9'},
+
+        {from: '青海', to: '西藏', value: 10, color: '#FAC55C'}
+
+    ];
+
+   
+
+    var convertLineData = function(data)
+
+    {
+
+        var res = [];
+
+       
+
+        for(var i = 0; i < data.length; i++)
+
+        {
+
+            var dataItem = data[i];
+
+            var fromCoord = geoCoordMap[dataItem.from];
+
+            var toCoord = geoCoordMap[dataItem.to];
+
+           
+
+            if(fromCoord && toCoord)
+
+            {
+
+                res.push(
+
+                {
+
+                    fromName: dataItem.from,
+
+                    toName: dataItem.to,
+
+                    coords: [fromCoord, toCoord],
+
+                    value: dataItem.value,
+
+                    color: dataItem.color
+
+                });
+
+            }
+
+        }
+
+       
+
+        return res;
+
+    };
+
+   
+
+    var convertPointData = function(data)
+
+    {
+
+        var res = [];
+
+       
+
+        for(var i = 0; i < data.length; i++)
+
+        {
+
+            var dataItem = data[i];
+
+            var toCoord = geoCoordMap[dataItem.to];
+
+           
+
+            if(toCoord)
+
+            {
+
+                res.push(
+
+                {
+
+                    name: dataItem.to,
+
+                    value: toCoord,
+
+                    count: dataItem.value,
+
+                    color: dataItem.color
+
+                });
+
+            }
+
+        }
+
+       
+
+        return res;
+
+    }
+
+   
+
+    var option =
+
+    {
+
+        tooltip:
+
+        {
+
+            trigger: 'item',
+
+            axisPointer:
+
+            {
+
+                type: 'shadow'
+
+            },
+
+            textStyle:
+
+            {
+
+                fontSize: 12 * scale,
+
+            },
+
+            formatter: function(params)
+
+            {
+
+                let returnStr = '';
+
+               
+
+                if(params.componentSubType == 'effectScatter')
+
+                {
+
+                    returnStr += params.marker;
+
+                    returnStr += params.name + '：' + params.data.count;
+
+                }
+
+                else if(params.componentSubType == 'lines')
+
+                {
+
+                    returnStr += params.marker;
+
+                    returnStr += params.data.fromName + ' -> ' + params.data.toName;
+
+                    returnStr += '：' + params.data.value;
+
+                }
+
+               
+
+                return returnStr;
+
+            }
+
+        },
+
+        geo:
+
+        {
+
+            map: 'china',
+
+            aspectScale: 1,
+
+            zoom: 1.25,
+
+            label:
+
+            {
+
+                normal:
+
+                {
+
+                    show: false,
+
+                },
+
+                emphasis:
+
+                {
+
+                    show: true,
+
+                    fontSize: 12 * scale,
+
+                    color:"#fff"
+
+                }
+
+            },
+
+            itemStyle:
+
+            {
+
+                normal:
+
+                {
+
+                    areaColor:
+
+                    {
+
+                        x: 0, y: 0, x2: 0, y2: 1,
+
+                        colorStops:
+
+                        [
+
+                            {
+
+                                offset: 0,
+
+                                color: '#0e309b'
+
+                            },
+
+                            {
+
+                                offset: 1,
+
+                                color: '#0e309b'
+
+                            },
+
+                        ],
+
+                    },
+
+                    borderColor: '#2abdee',
+
+                    borderWidth: 2 * scale,
+
+                },
+
+                emphasis:
+
+                {
+
+                    areaColor:
+
+                    {
+
+                        x: 0, y: 0, x2: 0, y2: 1,
+
+                        colorStops:
+
+                        [
+
+                            {
+
+                                offset: 0,
+
+                                color: '#fff'
+
+                            },
+
+                            {
+
+                                offset: 1,
+
+                                color: '#2b91b7'
+
+                            },
+
+                        ],
+
+                    },
+
+                }
+
+            },
+
+        },
+
+        series:
+
+        [
+
+            {
+
+                type: 'effectScatter',
+
+                coordinateSystem: 'geo',
+
+                data: convertPointData(mapData),
+
+                symbolSize: 15 * scale,
+
+                showEffectOn: 'render',
+
+                rippleEffect:
+
+                {
+
+                    brushType: 'stroke'
+
+                },
+
+                hoverAnimation: true,
+
+                label:
+
+                {
+
+                    normal:
+
+                    {
+
+                        show: true,
+
+                        formatter: function(param)
+
+                        {
+
+                            return param.data.name;
+
+                        },
+
+                        position: 'right',
+
+                        fontSize: 12 * scale,
+
+                        color: '#fff',
+
+                    }
+
+                },
+
+                itemStyle:
+
+                {
+
+                    normal:
+
+                    {
+
+                        color: function(param)
+
+                        {
+
+                            return param.data.color;
+
+                        },
+
+                        shadowBlur: 10,
+
+                        shadowColor: '#fff'
+
+                    }
+
+                },
+
+                zlevel: 1
+
+            },
+
+            {
+
+                type: 'lines',
+
+                zlevel: 2,
+
+                effect:
+
+                {
+
+                    show: true,
+
+                    period: 5,
+
+                    trailLength: 0.2,
+
+                    symbol: 'arrow',
+
+                    symbolSize: 4 * scale,
+
+                },
+
+                lineStyle:
+
+                {
+
+                    normal:
+
+                    {
+
+                        color: function(param)
+
+                        {
+
+                            return param.data.color;
+
+                        },
+
+                        width: 1 * scale,
+
+                        opacity: 0.2,
+
+                        curveness: .3
+
+                    }
+
+                },
+
+                data: convertLineData(mapData)
+
+            },
+
+        ]
+
+    };
+
+   
+
+    myChart.hideLoading();
+
+    myChart.setOption(option, true);
+
+    myChart.resize();
+
+})
+
+  </script>
+
+</body>
+
+</html>
